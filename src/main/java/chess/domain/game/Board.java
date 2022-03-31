@@ -112,7 +112,7 @@ public final class Board {
         return calculateDefaultScore(color) - countPawnsOnSameColumns(color) * PAWN_PENALTY_SCORE;
     }
 
-    private double calculateDefaultScore(Color color) {
+    private double calculateDefaultScore(final Color color) {
         return pieces.values()
                 .stream()
                 .filter(piece -> piece.isSameColor(color))
@@ -163,7 +163,7 @@ public final class Board {
         return gameResult;
     }
 
-    private boolean isKingAlive(Color color) {
+    private boolean isKingAlive(final Color color) {
         return pieces.values()
                 .stream()
                 .anyMatch(piece -> piece.isKing() && piece.isSameColor(color));
