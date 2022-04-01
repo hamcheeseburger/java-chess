@@ -134,6 +134,13 @@ public final class Board {
                 .count();
     }
 
+    public Map<Result, Color> calculateFinalWinner() {
+        if (isKingAlive(Color.WHITE) && isKingAlive(Color.BLACK)) {
+            return calculateScoreWinner();
+        }
+        return calculateWinnerWithKing();
+    }
+
     public Map<Result, Color> calculateScoreWinner() {
         Map<Result, Color> gameResult = new HashMap<>();
         if (calculateScore(Color.WHITE) > calculateScore(Color.BLACK)) {
@@ -143,13 +150,6 @@ public final class Board {
             gameResult.put(Result.WIN, Color.BLACK);
         }
         return gameResult;
-    }
-
-    public Map<Result, Color> calculateFinalWinner() {
-        if (isKingAlive(Color.WHITE) && isKingAlive(Color.BLACK)) {
-            return calculateScoreWinner();
-        }
-        return calculateWinnerWithKing();
     }
 
     private Map<Result, Color> calculateWinnerWithKing() {
