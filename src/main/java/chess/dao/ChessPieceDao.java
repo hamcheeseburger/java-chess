@@ -5,7 +5,8 @@ import chess.domain.pieces.Piece;
 import chess.domain.pieces.Symbol;
 import chess.domain.position.Column;
 
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -20,9 +21,8 @@ public class ChessPieceDao implements PieceDao<Piece> {
 
     @Override
     public Piece save(Piece piece) {
-        return connectionManager.executeQuery(connection -> {
-            final String sql = "INSERT INTO piece (type, color, position_id) VALUES (?, ?, ?)";
-            final PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+        final String sql = "INSERT INTO piece (type, color, position_id) VALUES (?, ?, ?)";
+        return connectionManager.executeQuery(preparedStatement -> {
             preparedStatement.setString(1, piece.getType().symbol().name());
             preparedStatement.setString(2, piece.getColor().name());
             preparedStatement.setInt(3, piece.getPositionId());
@@ -33,14 +33,13 @@ public class ChessPieceDao implements PieceDao<Piece> {
             }
 
             return new Piece(generatedKeys.getInt(1), piece.getColor(), piece.getType(), piece.getPositionId());
-        });
+        }, sql);
     }
 
     @Override
     public Optional<Piece> findByPositionId(int positionId) {
-        return connectionManager.executeQuery(connection -> {
-            final String sql = "SELECT * FROM piece WHERE position_id=?";
-            final PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        final String sql = "SELECT * FROM piece WHERE position_id=?";
+        return connectionManager.executeQuery(preparedStatement -> {
             preparedStatement.setInt(1, positionId);
             final ResultSet resultSet = preparedStatement.executeQuery();
             if (!resultSet.next()) {
@@ -48,38 +47,35 @@ public class ChessPieceDao implements PieceDao<Piece> {
             }
 
             return Optional.of(makePiece(resultSet));
-        });
+        }, sql);
     }
 
     @Override
     public int updatePositionId(int sourcePositionId, int targetPositionId) {
-        return connectionManager.executeQuery(connection -> {
-            final String sql = "UPDATE piece SET position_id=? WHERE position_id=?";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
+        final String sql = "UPDATE piece SET position_id=? WHERE position_id=?";
+        return connectionManager.executeQuery(preparedStatement -> {
             preparedStatement.setInt(1, targetPositionId);
             preparedStatement.setInt(2, sourcePositionId);
 
             return preparedStatement.executeUpdate();
-        });
+        }, sql);
     }
 
     @Override
     public int deleteByPositionId(int positionId) {
-        return connectionManager.executeQuery(connection -> {
-            final String sql = "DELETE FROM piece WHERE position_id=?";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
+        final String sql = "DELETE FROM piece WHERE position_id=?";
+        return connectionManager.executeQuery(preparedStatement -> {
             preparedStatement.setInt(1, positionId);
 
             return preparedStatement.executeUpdate();
-        });
+        }, sql);
     }
 
     @Override
     public List<Piece> getAllByBoardId(int boardId) {
-        return connectionManager.executeQuery(connection -> {
-            final String sql = "SELECT pi.id, pi.type, pi.color, pi.position_id FROM piece pi JOIN position po ON pi.position_id=po.id " +
-                    "JOIN board nb ON po.board_id=nb.id WHERE nb.id=?";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
+        final String sql = "SELECT pi.id, pi.type, pi.color, pi.position_id FROM piece pi JOIN position po ON pi.position_id=po.id " +
+                "JOIN board nb ON po.board_id=nb.id WHERE nb.id=?";
+        return connectionManager.executeQuery(preparedStatement -> {
             preparedStatement.setInt(1, boardId);
             final ResultSet resultSet = preparedStatement.executeQuery();
             List<Piece> pieces = new ArrayList<>();
@@ -88,16 +84,15 @@ public class ChessPieceDao implements PieceDao<Piece> {
             }
 
             return pieces;
-        });
+        }, sql);
     }
 
     @Override
     public int countPawnsOnSameColumn(int roomId, Column column, Color color) {
-        return connectionManager.executeQuery(connection -> {
-            final String sql = "SELECT COUNT(*) AS total_count FROM piece pi " +
-                    "JOIN position po ON pi.position_id=po.id " +
-                    "WHERE po.position_column=? AND po.board_id=? AND pi.type='PAWN' AND pi.color=?";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
+        final String sql = "SELECT COUNT(*) AS total_count FROM piece pi " +
+                "JOIN position po ON pi.position_id=po.id " +
+                "WHERE po.position_column=? AND po.board_id=? AND pi.type='PAWN' AND pi.color=?";
+        return connectionManager.executeQuery(preparedStatement -> {
             preparedStatement.setInt(1, column.value());
             preparedStatement.setInt(2, roomId);
             preparedStatement.setString(3, color.name());
@@ -107,7 +102,7 @@ public class ChessPieceDao implements PieceDao<Piece> {
             }
 
             return resultSet.getInt("total_count");
-        });
+        }, sql);
     }
 
     private Piece makePiece(ResultSet resultSet) throws SQLException {

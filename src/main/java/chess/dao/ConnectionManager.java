@@ -2,5 +2,5 @@ package chess.dao;
 
 public interface ConnectionManager {
 
-    <T> T executeQuery(ConnectionMapper<T> connectionFunction);
+    <T> T executeQuery(ConnectionMapper<T> connectionFunction, String sql);
 }

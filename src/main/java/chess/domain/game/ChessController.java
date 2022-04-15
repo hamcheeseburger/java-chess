@@ -26,7 +26,8 @@ public class ChessController {
         gameService = new GameService(
                 new ChessBoardDao(connectionManager),
                 new ChessPositionDao(connectionManager),
-                new ChessPieceDao(connectionManager)
+                new ChessPieceDao(connectionManager),
+                new ChessMemberDao(connectionManager)
         );
     }
 

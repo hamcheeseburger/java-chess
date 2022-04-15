@@ -2,16 +2,12 @@ package chess.dao;
 
 import chess.domain.game.ChessBoard;
 import chess.domain.pieces.Color;
-import chess.domain.pieces.Piece;
-import chess.domain.position.Position;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class ChessBoardDao implements BoardDao<ChessBoard> {
 
@@ -23,9 +19,8 @@ public class ChessBoardDao implements BoardDao<ChessBoard> {
 
     @Override
     public ChessBoard save(ChessBoard board) {
-        return connectionManager.executeQuery(connection -> {
-            final String sql = "INSERT INTO board (room_title, turn) VALUES (?, ?)";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+        final String sql = "INSERT INTO board (room_title, turn) VALUES (?, ?)";
+        return connectionManager.executeQuery(preparedStatement -> {
             preparedStatement.setString(1, board.getRoomTitle());
             preparedStatement.setString(2, board.getTurn().name());
             preparedStatement.executeUpdate();
@@ -35,14 +30,13 @@ public class ChessBoardDao implements BoardDao<ChessBoard> {
             }
 
             return new ChessBoard(generatedKeys.getInt(1), board.getRoomTitle(), board.getTurn());
-        });
+        }, sql);
     }
 
     @Override
     public ChessBoard getById(int id) {
-        return connectionManager.executeQuery(connection -> {
-            final String sql = "SELECT * FROM board WHERE id=?";
-            final PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        final String sql = "SELECT * FROM board WHERE id=?";
+        return connectionManager.executeQuery(preparedStatement -> {
             preparedStatement.setInt(1, id);
             final ResultSet resultSet = preparedStatement.executeQuery();
             if (!resultSet.next()) {
@@ -50,14 +44,13 @@ public class ChessBoardDao implements BoardDao<ChessBoard> {
             }
 
             return makeBoard(resultSet, new ChessMemberDao(connectionManager));
-        });
+        }, sql);
     }
 
     @Override
     public List<ChessBoard> findAll() {
-        return connectionManager.executeQuery(connection -> {
-            final String sql = "SELECT * FROM board";
-            final PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        final String sql = "SELECT * FROM board";
+        return connectionManager.executeQuery(preparedStatement -> {
             final ResultSet resultSet = preparedStatement.executeQuery();
             List<ChessBoard> boards = new ArrayList<>();
             while (resultSet.next()) {
@@ -65,59 +58,34 @@ public class ChessBoardDao implements BoardDao<ChessBoard> {
             }
 
             return boards;
-        });
-    }
-
-    @Override
-    public ChessBoard init(ChessBoard board, Map<Position, Piece> initialize) {
-        return connectionManager.executeQuery(connection -> {
-            final ChessBoard savedBoard = save(board);
-            final ChessPositionDao chessPositionDao = new ChessPositionDao(connectionManager);
-            final ChessPieceDao chessPieceDao = new ChessPieceDao(connectionManager);
-            final ChessMemberDao chessMemberDao = new ChessMemberDao(connectionManager);
-            chessPositionDao.saveAll(savedBoard.getId());
-            for (Position position : initialize.keySet()) {
-                int lastPositionId = chessPositionDao.getIdByColumnAndRowAndBoardId(position.getColumn(), position.getRow(), savedBoard.getId());
-                final Piece piece = initialize.get(position);
-                chessPieceDao.save(new Piece(piece.getColor(), piece.getType(), lastPositionId));
-            }
-            chessMemberDao.saveAll(board.getMembers(), savedBoard.getId());
-
-            return savedBoard;
-        });
+        }, sql);
     }
 
     @Override
     public int deleteById(int id) {
-        return connectionManager.executeQuery(connection -> {
-            String sql = "DELETE FROM board where id=?";
-            final PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        String sql = "DELETE FROM board where id=?";
+        return connectionManager.executeQuery(preparedStatement -> {
             preparedStatement.setInt(1, id);
 
             return preparedStatement.executeUpdate();
-        });
+        }, sql);
     }
 
     @Override
     public void deleteAll() {
-        connectionManager.executeQuery(connection -> {
-            String sql = "DELETE FROM board";
-            final PreparedStatement preparedStatement = connection.prepareStatement(sql);
-
-            return preparedStatement.executeUpdate();
-        });
+        String sql = "DELETE FROM board";
+        connectionManager.executeQuery(PreparedStatement::executeUpdate, sql);
     }
 
     @Override
     public void updateTurn(Color color, int boardId) {
-        connectionManager.executeQuery(connection -> {
-            String sql = "UPDATE board SET turn=? WHERE id=?";
-            final PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        String sql = "UPDATE board SET turn=? WHERE id=?";
+        connectionManager.executeQuery(preparedStatement -> {
             preparedStatement.setString(1, color.name());
             preparedStatement.setInt(2, boardId);
 
             return preparedStatement.executeUpdate();
-        });
+        }, sql);
     }
 
     private ChessBoard makeBoard(ResultSet resultSet, ChessMemberDao chessMemberDao) throws SQLException {

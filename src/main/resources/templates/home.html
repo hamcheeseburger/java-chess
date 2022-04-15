@@ -12,19 +12,19 @@
         <h3>방 만들기</h3>
         <form id="roomForm" enctype="text/plain" action="/room" method="POST">
             <div>
-            <label> 방이름
-                <input type="text" id="roomName" name="roomName"/>
-            </label>
+                <label> 방이름
+                    <input type="text" id="roomName" name="roomName"/>
+                </label>
             </div>
             <div>
-            <label> 흰&nbsp;말
-                <input type="text" id="whiteName" name="whiteName"/>
-            </label>
+                <label> 흰&nbsp;말
+                    <input type="text" id="whiteName" name="whiteName"/>
+                </label>
             </div>
             <div>
-            <label> 검정말
-                <input type="text" id="blackName" name="blackName"/>
-            </label>
+                <label> 검정말
+                    <input type="text" id="blackName" name="blackName"/>
+                </label>
             </div>
         </form>
         <button id="makeButton" onclick="makeRoom()">방만들기</button>
@@ -33,7 +33,7 @@
         <h3>방 목록</h3>
         {{#boards}}
         <table>
-            {{#boardsDto}}
+            {{#roomsDto}}
             {{#this}}
             <tr>
                 <td>
@@ -43,7 +43,7 @@
                 </td>
             </tr>
             {{/this}}
-            {{/boardsDto}}
+            {{/roomsDto}}
         </table>
         {{/boards}}
     </div>

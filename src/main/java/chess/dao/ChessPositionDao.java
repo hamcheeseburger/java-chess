@@ -7,7 +7,9 @@ import chess.domain.position.Column;
 import chess.domain.position.Position;
 import chess.domain.position.Row;
 
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,9 +25,8 @@ public class ChessPositionDao implements PositionDao<Position> {
 
     @Override
     public Position save(Position position) {
-        return connectionManager.executeQuery(connection -> {
-            final String sql = "INSERT INTO position (position_column, position_row, board_id) VALUES (?, ?, ?)";
-            final PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+        final String sql = "INSERT INTO position (position_column, position_row, board_id) VALUES (?, ?, ?)";
+        return connectionManager.executeQuery(preparedStatement -> {
             preparedStatement.setInt(1, position.getColumn().value());
             preparedStatement.setInt(2, position.getRow().value());
             preparedStatement.setInt(3, position.getBoardId());
@@ -36,45 +37,37 @@ public class ChessPositionDao implements PositionDao<Position> {
             }
 
             return new Position(generatedKeys.getInt(1), position.getColumn(), position.getRow(), position.getBoardId());
-        });
+        }, sql);
     }
 
     @Override
     public Position getByColumnAndRowAndBoardId(Column column, Row row, int boardId) {
-        return connectionManager.executeQuery(connection -> {
-            final ResultSet resultSet = findPosition(column, row, boardId, connection);
-
-            return makePosition(resultSet, "id");
-        });
-    }
-
-    private ResultSet findPosition(Column column, Row row, int boardId, Connection connection) throws SQLException {
         final String sql = "SELECT id, position_column, position_row, board_id " +
                 "FROM position " +
                 "WHERE position_column=? AND position_row=? AND board_id=?";
-        final PreparedStatement preparedStatement = connection.prepareStatement(sql);
-        preparedStatement.setInt(1, column.value());
-        preparedStatement.setInt(2, row.value());
-        preparedStatement.setInt(3, boardId);
-        final ResultSet resultSet = preparedStatement.executeQuery();
-        if (!resultSet.next()) {
-            throw new IllegalArgumentException(column.name() + row.value() + "의 위치가 존재하지 않습니다.");
-        }
+        return connectionManager.executeQuery(preparedStatement -> {
+            preparedStatement.setInt(1, column.value());
+            preparedStatement.setInt(2, row.value());
+            preparedStatement.setInt(3, boardId);
+            final ResultSet resultSet = preparedStatement.executeQuery();
+            if (!resultSet.next()) {
+                throw new IllegalArgumentException(column.name() + row.value() + "의 위치가 존재하지 않습니다.");
+            }
 
-        return resultSet;
+            return makePosition(resultSet, "id");
+        }, sql);
     }
 
     @Override
     public int saveAll(int boardId) {
-        return connectionManager.executeQuery(connection -> {
-            final String sql = "INSERT INTO POSITION (position_column, position_row, board_id) values (?, ?, ?)";
-            final PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        final String sql = "INSERT INTO POSITION (position_column, position_row, board_id) values (?, ?, ?)";
+        return connectionManager.executeQuery(preparedStatement -> {
             for (Column column : Column.values()) {
                 saveColumnLine(boardId, preparedStatement, column);
             }
 
             return preparedStatement.executeBatch().length;
-        });
+        }, sql);
     }
 
     private void saveColumnLine(int boardId, PreparedStatement preparedStatement, Column column) throws SQLException {
@@ -94,14 +87,12 @@ public class ChessPositionDao implements PositionDao<Position> {
 
     @Override
     public Map<Position, Piece> findAllPositionsAndPieces(int boardId) {
-        return connectionManager.executeQuery(connection -> {
-            final String sql = "SELECT po.id AS po_id, po.position_column, po.position_row, po.board_id, " +
-                    "pi.id AS pi_id, pi.type, pi.color, pi.position_id " +
-                    "FROM position po " +
-                    "JOIN piece pi ON po.id = pi.position_id " +
-                    "WHERE board_id=?";
-
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        final String sql = "SELECT po.id AS po_id, po.position_column, po.position_row, po.board_id, " +
+                "pi.id AS pi_id, pi.type, pi.color, pi.position_id " +
+                "FROM position po " +
+                "JOIN piece pi ON po.id = pi.position_id " +
+                "WHERE board_id=?";
+        return connectionManager.executeQuery(preparedStatement -> {
             preparedStatement.setInt(1, boardId);
             final ResultSet resultSet = preparedStatement.executeQuery();
             Map<Position, Piece> existPiecesWithPosition = new HashMap<>();
@@ -110,7 +101,7 @@ public class ChessPositionDao implements PositionDao<Position> {
             }
 
             return existPiecesWithPosition;
-        });
+        }, sql);
     }
 
     private Position makePosition(ResultSet resultSet, String idLabel) throws SQLException {

@@ -1,11 +1,13 @@
 package chess.service;
 
 import chess.dao.BoardDao;
+import chess.dao.MemberDao;
 import chess.dao.PieceDao;
 import chess.dao.PositionDao;
 import chess.domain.game.ChessBoard;
 import chess.domain.game.ConsoleBoard;
 import chess.domain.game.Initializer;
+import chess.domain.member.Member;
 import chess.domain.pieces.Color;
 import chess.domain.pieces.Piece;
 import chess.domain.position.Position;
@@ -22,15 +24,26 @@ public final class GameService {
     private final BoardDao<ChessBoard> boardDao;
     private final PositionDao<Position> positionDao;
     private final PieceDao<Piece> pieceDao;
+    private final MemberDao<Member> memberDao;
 
-    public GameService(BoardDao<ChessBoard> boardDao, PositionDao<Position> positionDao, PieceDao<Piece> pieceDao) {
+    public GameService(BoardDao<ChessBoard> boardDao, PositionDao<Position> positionDao, PieceDao<Piece> pieceDao, MemberDao<Member> memberDao) {
         this.boardDao = boardDao;
         this.positionDao = positionDao;
         this.pieceDao = pieceDao;
+        this.memberDao = memberDao;
     }
 
     public ChessBoard saveBoard(final ChessBoard board, final Initializer initializer) {
-        return boardDao.init(board, initializer.initialize());
+        final ChessBoard savedBoard = boardDao.save(board);
+        final Map<Position, Piece> initialize = initializer.initialize();
+        positionDao.saveAll(savedBoard.getId());
+        for (Position position : initialize.keySet()) {
+            int lastPositionId = positionDao.getIdByColumnAndRowAndBoardId(position.getColumn(), position.getRow(), savedBoard.getId());
+            final Piece piece = initialize.get(position);
+            pieceDao.save(new Piece(piece.getColor(), piece.getType(), lastPositionId));
+        }
+        memberDao.saveAll(board.getMembers(), savedBoard.getId());
+        return savedBoard;
     }
 
     public void move(final int roomId, final Position sourceRawPosition, final Position targetRawPosition) {

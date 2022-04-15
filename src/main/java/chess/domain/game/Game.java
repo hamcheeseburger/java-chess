@@ -1,11 +1,12 @@
 package chess.domain.game;
 
-import chess.domain.pieces.Piece;
-import chess.machine.Result;
 import chess.domain.pieces.Color;
+import chess.domain.pieces.Piece;
 import chess.domain.position.Position;
+import chess.machine.Result;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Optional;
 
 public final class Game {
 

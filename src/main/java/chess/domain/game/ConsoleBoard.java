@@ -1,12 +1,12 @@
 package chess.domain.game;
 
-import chess.domain.pieces.Piece;
-import chess.machine.Result;
 import chess.domain.pieces.Color;
+import chess.domain.pieces.Piece;
 import chess.domain.position.Column;
 import chess.domain.position.Direction;
 import chess.domain.position.Position;
 import chess.domain.position.Row;
+import chess.machine.Result;
 
 import java.util.*;
 

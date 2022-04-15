@@ -1,8 +1,6 @@
 package chess.dao;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class ChessConnectionManager implements ConnectionManager {
 
@@ -11,9 +9,10 @@ public class ChessConnectionManager implements ConnectionManager {
     private static final String PASSWORD = "password";
 
     @Override
-    public <T> T executeQuery(ConnectionMapper<T> connectionMapper) {
+    public <T> T executeQuery(ConnectionMapper<T> connectionMapper, String sql) {
         try (final Connection connection = getConnection()) {
-            return connectionMapper.execute(connection);
+            PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            return connectionMapper.execute(preparedStatement);
         } catch (SQLException e) {
             throw new IllegalArgumentException(e);
         }
