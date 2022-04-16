@@ -10,9 +10,9 @@ function clicked(id) {
 function setVariable(id) {
     if (first !== '') {
         second = id;
-    } else {
-        first = id;
+        return;
     }
+    first = id;
 }
 
 function changeClickedBackground(id) {
@@ -31,7 +31,7 @@ function checkSendToServer() {
 function checkStatus() {
     let element = document.getElementById("roomId");
 
-    fetch('/room/' + element.value + '/status', {
+    fetch(`/room/${element.value}/status`, {
         method: "GET",
         headers: {
             "Content-Type": "text/plain",
@@ -48,7 +48,7 @@ function checkStatus() {
 
 function sendToServer(first, second) {
     let element = document.getElementById("roomId");
-    fetch('/room/' + element.value + '/move', {
+    fetch(`/room/${element.value}/move`, {
         method: "POST",
         headers: {
             "Content-Type": "text/plain",
@@ -62,7 +62,7 @@ function sendToServer(first, second) {
                 }
                 if (data.finished === true) {
                     alert("게임이 종료되었습니다.");
-                    document.location.href = '/'
+                    document.location.href = `/`
                     return;
                 }
                 location.reload();
