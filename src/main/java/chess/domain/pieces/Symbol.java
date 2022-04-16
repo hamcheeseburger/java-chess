@@ -27,7 +27,7 @@ public enum Symbol {
         return Arrays.stream(values())
                 .filter(symbol -> symbol.name().equals(type))
                 .findFirst()
-                .orElseThrow(IllegalArgumentException::new);
+                .orElseThrow(() -> new IllegalArgumentException(type + "을 찾을 수 없습니다."));
     }
 
     public String value() {

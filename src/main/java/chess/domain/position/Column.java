@@ -33,7 +33,7 @@ public enum Column {
         return Arrays.stream(values())
                 .filter(column -> column.value == value)
                 .findFirst()
-                .orElseThrow(IllegalArgumentException::new);
+                .orElseThrow(() -> new IllegalArgumentException(value + "를 찾을 수 없습니다."));
     }
 
     public boolean isSame(final Column column) {
