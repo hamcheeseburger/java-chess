@@ -17,7 +17,7 @@ public class RequestDto {
     }
 
     public static RequestDto of(String request) {
-        final List<String> inputs = Arrays.stream(request.split("\n"))
+        final List<String> inputs = Arrays.stream(request.split(System.lineSeparator()))
                 .map(s -> s.split("=")[1])
                 .collect(Collectors.toList());
         validateInputSize(inputs);
