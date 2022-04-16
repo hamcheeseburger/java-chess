@@ -33,11 +33,6 @@ class PieceDaoTest {
         final Piece piece = dao.save(new Piece(Color.WHITE, new Pawn(), positionId));
     }
 
-    @AfterEach
-    void setDown() {
-        boardDao.deleteAll();
-    }
-
     @Test
     void saveTest() {
         final Piece piece = dao.save(new Piece(Color.WHITE, new Pawn(), positionId));
@@ -75,5 +70,10 @@ class PieceDaoTest {
     void getAllPiecesTest() {
         final List<Piece> pieces = dao.getAllByBoardId(boardId);
         assertThat(pieces.size()).isEqualTo(1);
+    }
+
+    @AfterEach
+    void setDown() {
+        boardDao.deleteAll();
     }
 }

@@ -32,11 +32,6 @@ class PositionDaoTest {
         pieceDao.save(new Piece(Color.WHITE, new Pawn(), position.getId()));
     }
 
-    @AfterEach
-    void setDown() {
-        boardDao.deleteAll();
-    }
-
     @Test
     void save() {
         final Position Position = dao.save(new Position(Column.B, Row.TWO, boardId));
@@ -68,5 +63,10 @@ class PositionDaoTest {
     void saveAllPositionTest() {
         final int savedRecords = dao.saveAll(boardId);
         assertThat(savedRecords).isEqualTo(64);
+    }
+
+    @AfterEach
+    void setDown() {
+        boardDao.deleteAll();
     }
 }

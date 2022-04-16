@@ -20,14 +20,14 @@ class MemberDaoTest {
         this.boardId = board.getId();
     }
 
-    @AfterEach
-    void setDown() {
-        BoardDao.deleteAll();
-    }
-
     @Test
     void save() {
         final Member member = dao.save("eden", boardId);
         assertThat(member.getName()).isEqualTo("eden");
+    }
+
+    @AfterEach
+    void setDown() {
+        BoardDao.deleteAll();
     }
 }
